@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TG TET Maths (6-8 Classes) Practice Test</title>
+    <style>
+        /* --- GENERAL STYLES (Same as previous design) --- */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f4f6f9; display: flex; flex-direction: column; height: 100vh; user-select: none; }
+        header { background-color: #2c3e50; color: white; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); flex-shrink: 0; position: sticky; top: 0; z-index: 1000; }
+        .timer { background: #fff; color: #c0392b; padding: 5px 12px; border-radius: 4px; font-weight: bold; font-size: 1.1rem; }
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        .question-area { flex: 3; padding: 20px; overflow-y: auto; background: white; display: flex; flex-direction: column; }
+        .question-header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .q-text-box { margin-bottom: 20px; }
+        .q-eng { font-size: 1.15rem; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+        .q-tel { font-size: 1.1rem; color: #2980b9; line-height: 1.5; }
+        .options-container { display: flex; flex-direction: column; gap: 12px; }
+        .option-label { display: flex; align-items: flex-start; padding: 12px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; background: #fff; transition: 0.2s; }
+        .option-label:hover { background-color: #f8f9fa; border-color: #3498db; }
+        input[type="radio"] { margin-right: 15px; margin-top: 5px; transform: scale(1.3); flex-shrink: 0; }
+        
+        /* Review Colors */
+        .correct-answer { background-color: #d4edda !important; border-color: #28a745 !important; } 
+        .wrong-answer { background-color: #f8d7da !important; border-color: #dc3545 !important; } 
+
+        .buttons-container { margin-top: auto; padding-top: 30px; display: flex; justify-content: space-between; gap: 10px; }
+        .btn { padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; color: white; font-weight: bold; flex: 1; }
+        .btn-save { background-color: #27ae60; } 
+        .btn-clear { background-color: #7f8c8d; } 
+        .btn-submit { background-color: #c0392b; width: 100%; margin-top: 15px; padding: 15px; font-size: 1.1rem;}
+
+        .sidebar { flex: 1; background: #ecf0f1; display: flex; flex-direction: column; border-left: 1px solid #bdc3c7; max-width: 350px; }
+        .candidate-info { padding: 15px; background: #dfe6e9; border-bottom: 1px solid #bdc3c7; text-align: center; flex-shrink: 0; }
+        .palette-area { padding: 15px; flex: 1; overflow-y: auto; }
+        .palette-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        .q-num { aspect-ratio: 1; display: flex; justify-content: center; align-items: center; cursor: pointer; border: 1px solid #bdc3c7; font-weight: bold; background: #fff; border-radius: 4px; }
+        
+        /* Palette Status Colors */
+        .answered { background-color: #27ae60; color: white; border-color: #27ae60; }
+        .not-answered { background-color: #e74c3c; color: white; border-color: #e74c3c; }
+        .current-q { border: 2px solid #2980b9; transform: scale(1.1); box-shadow: 0 0 5px rgba(0,0,0,0.3); }
+
+        .main-footer { background-color: #34495e; color: white; text-align: center; padding: 15px; font-size: 0.9rem; flex-shrink: 0; border-top: 4px solid #1abc9c; line-height: 1.5; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: white; padding: 30px; border-radius: 10px; text-align: center; width: 85%; max-width: 400px; }
+
+        @media screen and (max-width: 768px) {
+            body { height: auto; overflow-y: auto; display: block; }
+            .main-container { display: block; height: auto; overflow: visible; }
+            .question-area { height: auto; border-right: none; border-bottom: 5px solid #bdc3c7; padding-bottom: 30px; }
+            .sidebar { height: auto; max-width: 100%; border-left: none; }
+            .buttons-container { position: relative; margin-top: 30px; }
+            .palette-area { max-height: 300px; overflow-y: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div style="font-size: 0.95rem;">TG TET Maths (6-8)</div>
+    <div class="timer" id="timer">30:00</div>
+</header>
+
+<div class="main-container">
+    <div class="question-area">
+        <div class="question-header">
+            <span style="font-weight:bold; color:#555;">Question No: <span id="q-number">1</span></span>
+            <span id="review-status" style="color:#e67e22; font-weight:bold; display:none;">REVIEW MODE</span>
+        </div>
+        
+        <div class="q-text-box">
+            <div class="q-eng" id="q-text-en">Loading...</div>
+            <div class="q-tel" id="q-text-te">Loading...</div>
+        </div>
+
+        <div class="options-container" id="options-box"></div>
+
+        <div class="buttons-container">
+            <button class="btn btn-clear" id="btn-clear" onclick="clearResponse()">Clear Response</button>
+            <button class="btn btn-save" id="btn-next" onclick="saveAndNext()">Save & Next</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="candidate-info">
+            <strong>Candidate Name</strong><br>
+            <small>Maths Aspirant</small>
+        </div>
+        
+        <div class="palette-area">
+            <div style="margin-bottom:10px; font-weight:bold; color:#555;">Question Palette:</div>
+            <div class="palette-grid" id="palette-box"></div>
+            
+            <div style="margin-top:20px; font-size:0.8rem; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+                <span style="color:#27ae60;">■ Answered</span>
+                <span style="color:#e74c3c;">■ Not Answered</span>
+                <span style="color:#7f8c8d;">□ Not Visited</span>
+            </div>
+        </div>
+
+        <div style="padding: 15px; border-top: 1px solid #ccc; background: white;">
+            <button class="btn btn-submit" id="btn-submit" onclick="submitExam()">SUBMIT EXAM</button>
+            <button class="btn btn-save" id="btn-restart" style="width:100%; display:none;" onclick="location.reload()">START NEW EXAM</button>
+        </div>
+    </div>
+</div>
+
+<footer class="main-footer">
+    Designed & Developed by:<br> 
+    <strong style="font-size:1.1em; color:#1abc9c;">A. MUNINDER RAJU</strong><br>
+    Gazetted Headmaster, ZPHS CHINCHOLI (B)
+</footer>
+
+<div id="resultModal" class="modal">
+    <div class="modal-content">
+        <h2 style="color:#2c3e50;">Exam Completed!</h2>
+        <div style="font-size:3rem; color:#27ae60; font-weight:bold;" id="score">0</div>
+        <p style="color:#7f8c8d; font-size:1.1rem;" id="percentage"></p>
+        <hr style="margin: 20px 0; border-top:1px solid #eee;">
+        <button class="btn btn-clear" style="background:#3498db; width:100%; margin-bottom:10px;" onclick="startReview()">Review Answers</button>
+        <button class="btn btn-save" style="width:100%;" onclick="location.reload()">Retake Exam</button>
+    </div>
+</div>
+
+<script>
+    // --- 30 MATHS QUESTIONS (Classes 6-8) ---
+    const questions = [
+        // Number System & Integers
+        { q_en: "1. The smallest natural number is:", q_te: "1. అతి చిన్న సహజ సంఖ్య:", options_en: ["0", "1", "-1", "2"], options_te: ["0", "1", "-1", "2"], ans: 1 },
+        { q_en: "2. Additive inverse of -5 is:", q_te: "2. -5 యొక్క సంకలన విలోమం:", options_en: ["5", "-5", "0", "1"], options_te: ["5", "-5", "0", "1"], ans: 0 },
+        { q_en: "3. Which of the following is a prime number?", q_te: "3. క్రింది వాటిలో ప్రధాన సంఖ్య ఏది?", options_en: ["9", "15", "2", "21"], options_te: ["9", "15", "2", "21"], ans: 2 },
+        { q_en: "4. HCF of 8 and 12 is:", q_te: "4. 8 మరియు 12 ల గ.సా.భా (HCF) ఎంత?", options_en: ["2", "4", "8", "24"], options_te: ["2", "4", "8", "24"], ans: 1 },
+        { q_en: "5. LCM of 3, 4, and 5 is:", q_te: "5. 3, 4, మరియు 5 ల క.సా.గు (LCM) ఎంత?", options_en: ["12", "20", "60", "15"], options_te: ["12", "20", "60", "15"], ans: 2 },
+        
+        // Fractions & Decimals
+        { q_en: "6. The value of 2/5 + 1/5 is:", q_te: "6. 2/5 + 1/5 యొక్క విలువ:", options_en: ["3/10", "3/5", "2/25", "1/5"], options_te: ["3/10", "3/5", "2/25", "1/5"], ans: 1 },
+        { q_en: "7. Which is greater: 0.5 or 0.05?", q_te: "7. వీటిలో ఏది పెద్దది: 0.5 లేదా 0.05?", options_en: ["0.5", "0.05", "Both Equal", "None"], options_te: ["0.5", "0.05", "రెండూ సమానం", "ఏదీ కాదు"], ans: 0 },
+        { q_en: "8. The multiplicative inverse of 3/4 is:", q_te: "8. 3/4 యొక్క గుణకార విలోమం:", options_en: ["-3/4", "4/3", "1", "0"], options_te: ["-3/4", "4/3", "1", "0"], ans: 1 },
+
+        // Algebra
+        { q_en: "9. If 2x + 3 = 9, then x = ?", q_te: "9. 2x + 3 = 9 అయితే, x విలువ ఎంత?", options_en: ["2", "3", "6", "4"], options_te: ["2", "3", "6", "4"], ans: 1 },
+        { q_en: "10. The degree of the polynomial 3x² + 5x - 7 is:", q_te: "10. 3x² + 5x - 7 బహుపది యొక్క పరిమాణం (degree) ఎంత?", options_en: ["1", "2", "3", "0"], options_te: ["1", "2", "3", "0"], ans: 1 },
+        { q_en: "11. The sum of 3a and 5a is:", q_te: "11. 3a మరియు 5a ల మొత్తం:", options_en: ["8a", "15a", "8a²", "2a"], options_te: ["8a", "15a", "8a²", "2a"], ans: 0 },
+        
+        // Exponents & Powers
+        { q_en: "12. The value of 2³ is:", q_te: "12. 2³ (2 క్యూబ్) విలువ:", options_en: ["6", "8", "9", "5"], options_te: ["6", "8", "9", "5"], ans: 1 },
+        { q_en: "13. a⁰ = ? (where a is not zero)", q_te: "13. a⁰ = ? (a సున్నా కానప్పుడు)", options_en: ["0", "1", "a", "-1"], options_te: ["0", "1", "a", "-1"], ans: 1 },
+
+        // Geometry (Lines, Angles, Triangles)
+        { q_en: "14. An angle greater than 90° and less than 180° is called:", q_te: "14. 90° కంటే ఎక్కువ, 180° కంటే తక్కువ ఉన్న కోణాన్ని ఏమంటారు?", options_en: ["Acute Angle", "Right Angle", "Obtuse Angle", "Reflex Angle"], options_te: ["అల్ప కోణం", "లంబ కోణం", "అధిక కోణం", "పరావర్తన కోణం"], ans: 2 },
+        { q_en: "15. The sum of three angles in a triangle is:", q_te: "15. త్రిభుజంలోని మూడు కోణాల మొత్తం:", options_en: ["90°", "180°", "360°", "270°"], options_te: ["90°", "180°", "360°", "270°"], ans: 1 },
+        { q_en: "16. If two sides of a triangle are equal, it is called:", q_te: "16. ఒక త్రిభుజంలో రెండు భుజాలు సమానమైతే, అది:", options_en: ["Equilateral", "Isosceles", "Scalene", "Right angled"], options_te: ["సమబాహు", "సమద్విబాహు", "విషమబాహు", "లంబకోణ"], ans: 1 },
+        { q_en: "17. The longest chord of a circle is called:", q_te: "17. వృత్తంలో అత్యంత పెద్ద జ్యా (chord) ని ఏమంటారు?", options_en: ["Radius", "Diameter", "Arc", "Sector"], options_te: ["వ్యాసార్థం", "వ్యాసం", "చాపం", "సెక్టార్"], ans: 1 },
+        
+        // Mensuration (Area & Perimeter)
+        { q_en: "18. Perimeter of a square with side 'a' is:", q_te: "18. భుజం 'a' గా గల చతురస్రం చుట్టుకొలత:", options_en: ["a²", "2a", "4a", "a/4"], options_te: ["a²", "2a", "4a", "a/4"], ans: 2 },
+        { q_en: "19. Area of a rectangle with length 10cm and breadth 5cm:", q_te: "19. పొడవు 10cm, వెడల్పు 5cm గల దీర్ఘచతురస్ర వైశాల్యం:", options_en: ["50 sq.cm", "15 sq.cm", "30 sq.cm", "100 sq.cm"], options_te: ["50 చ.సెం.మీ", "15 చ.సెం.మీ", "30 చ.సెం.మీ", "100 చ.సెం.మీ"], ans: 0 },
+        { q_en: "20. The value of π (Pi) is approximately:", q_te: "20. π (పై) యొక్క సుమారు విలువ:", options_en: ["22/7", "3.141", "Both 1 & 2", "180"], options_te: ["22/7", "3.141", "1 మరియు 2 రెండూ", "180"], ans: 2 },
+        { q_en: "21. Volume of a cube with side 'a' is:", q_te: "21. భుజం 'a' గా గల సమఘనం (Cube) ఘనపరిమాణం:", options_en: ["a²", "a³", "6a²", "4a"], options_te: ["a²", "a³", "6a²", "4a"], ans: 1 },
+
+        // Ratios & Proportions
+        { q_en: "22. The ratio of 50 paise to 1 Rupee is:", q_te: "22. 50 పైసలకు, 1 రూపాయికి గల నిష్పత్తి:", options_en: ["50:1", "1:2", "2:1", "1:50"], options_te: ["50:1", "1:2", "2:1", "1:50"], ans: 1 },
+        { q_en: "23. If A:B = 2:3 and B:C = 3:4, then A:C = ?", q_te: "23. A:B = 2:3 మరియు B:C = 3:4 అయితే, A:C ఎంత?", options_en: ["2:4", "1:2", "2:3", "3:4"], options_te: ["2:4", "1:2", "2:3", "3:4"], ans: 1 },
+
+        // Statistics / Data Handling
+        { q_en: "24. The mode of data 2, 3, 4, 2, 5, 2 is:", q_te: "24. దత్తాంశం 2, 3, 4, 2, 5, 2 యొక్క బాహుళకం (Mode) ఎంత?", options_en: ["2", "3", "4", "5"], options_te: ["2", "3", "4", "5"], ans: 0 },
+        { q_en: "25. Mean of first 5 natural numbers (1,2,3,4,5):", q_te: "25. మొదటి 5 సహజ సంఖ్యల (1,2,3,4,5) సగటు:", options_en: ["2", "3", "4", "2.5"], options_te: ["2", "3", "4", "2.5"], ans: 1 },
+        
+        // Simple Interest & Percentage
+        { q_en: "26. 25% of 200 is:", q_te: "26. 200 లో 25% ఎంత?", options_en: ["25", "50", "75", "100"], options_te: ["25", "50", "75", "100"], ans: 1 },
+        { q_en: "27. Formula for Simple Interest (I):", q_te: "27. బారు వడ్డీ సూత్రం (I):", options_en: ["PTR/100", "P(1+R/100)", "PR/100", "P+I"], options_te: ["PTR/100", "P(1+R/100)", "PR/100", "P+I"], ans: 0 },
+
+        // Quadrilaterals
+        { q_en: "28. Sum of interior angles of a quadrilateral:", q_te: "28. చతుర్భుజంలోని అంతర కోణాల మొత్తం:", options_en: ["180°", "360°", "90°", "540°"], options_te: ["180°", "360°", "90°", "540°"], ans: 1 },
+        { q_en: "29. A parallelogram with all sides equal is called:", q_te: "29. అన్ని భుజాలు సమానంగా గల సమాంతర చతుర్భుజాన్ని ఏమంటారు?", options_en: ["Rectangle", "Rhombus", "Trapezium", "Kite"], options_te: ["దీర్ఘచతురస్రం", "రాంబస్ (సమచతుర్భుజం)", "ట్రెపీజియం", "గాలిపటం"], ans: 1 },
+        
+        // Practical Math
+        { q_en: "30. Number of faces in a Cube:", q_te: "30. ఒక సమఘనం (Cube) కు ఉండే ముఖాల సంఖ్య:", options_en: ["4", "6", "8", "12"], options_te: ["4", "6", "8", "12"], ans: 1 }
+    ];
+
+    let currentQIndex = 0;
+    let userAnswers = new Array(questions.length).fill(null); 
+    let timeLeft = 1800; // 30 minutes for 30 questions
+    let timerInterval;
+    let isReviewMode = false;
+
+    function loadQuestion(index) {
+        currentQIndex = index;
+        document.getElementById('q-number').innerText = index + 1;
+        document.getElementById('q-text-en').innerText = questions[index].q_en;
+        document.getElementById('q-text-te').innerText = questions[index].q_te;
+        
+        const optionsBox = document.getElementById('options-box');
+        optionsBox.innerHTML = '';
+
+        questions[index].options_en.forEach((optEn, i) => {
+            let optTe = questions[index].options_te[i];
+            let isChecked = userAnswers[index] === i ? 'checked' : '';
+            
+            let rowStyle = '';
+            let statusText = '';
+            
+            if (isReviewMode) {
+                // Logic to show correct answer in Green
+                if (i === questions[index].ans) {
+                    rowStyle = 'correct-answer';
+                    statusText = '<span style="color:green; margin-left:auto; font-weight:bold;">✔ Correct</span>';
+                }
+                // Logic to show wrong selected answer in Red
+                if (userAnswers[index] === i && i !== questions[index].ans) {
+                    rowStyle = 'wrong-answer';
+                    statusText = '<span style="color:red; margin-left:auto; font-weight:bold;">✘ Wrong</span>';
+                }
+                isChecked += ' disabled';
+            }
+
+            optionsBox.innerHTML += `
+                <label class="option-label ${rowStyle}">
+                    <input type="radio" name="option" value="${i}" ${isChecked}>
+                    <div style="display:flex; flex-direction:column; width:100%;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:600; font-size:1rem; color:#333;">${optEn}</span>
+                            ${statusText}
+                        </div>
+                        <span style="font-size:0.95rem; color:#555;">${optTe}</span>
+                    </div>
+                </label>
+            `;
+        });
+        updatePalette();
+        updateButtons();
+    }
+
+    function saveAndNext() {
+        if(isReviewMode) {
+            if (currentQIndex < questions.length - 1) loadQuestion(currentQIndex + 1);
+            return;
+        }
+
+        const selected = document.querySelector('input[name="option"]:checked');
+        if (selected) userAnswers[currentQIndex] = parseInt(selected.value);
+        
+        if (currentQIndex < questions.length - 1) loadQuestion(currentQIndex + 1);
+        else alert("This is the last question. Check Palette & Submit.");
+        updatePalette();
+    }
+
+    function clearResponse() {
+        if(isReviewMode) return;
+        const selected = document.querySelector('input[name="option"]:checked');
+        if (selected) {
+            selected.checked = false;
+            userAnswers[currentQIndex] = null;
+        }
+    }
+
+    function updatePalette() {
+        const paletteBox = document.getElementById('palette-box');
+        paletteBox.innerHTML = '';
+        userAnswers.forEach((ans, i) => {
+            let statusClass = 'not-visited';
+            if (ans !== null) statusClass = 'answered';
+            else if (i === currentQIndex) statusClass = 'not-answered';
+            
+            let activeClass = (i === currentQIndex) ? 'current-q' : '';
+            paletteBox.innerHTML += `<div class="q-num ${statusClass} ${activeClass}" onclick="loadQuestion(${i})">${i + 1}</div>`;
+        });
+    }
+
+    function updateButtons() {
+        if (isReviewMode) {
+            document.getElementById('btn-clear').style.display = 'none';
+            document.getElementById('btn-next').innerText = 'Next Question >';
+        }
+    }
+
+    function startTimer() {
+        const timerElement = document.getElementById('timer');
+        timerInterval = setInterval(() => {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            timerElement.innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            if (timeLeft-- <= 0) { clearInterval(timerInterval); submitExam(); }
+        }, 1000);
+    }
+
+    function submitExam() {
+        clearInterval(timerInterval);
+        let score = 0;
+        questions.forEach((q, i) => { if (userAnswers[i] === q.ans) score++; });
+        
+        document.getElementById('score').innerText = `${score} / ${questions.length}`;
+        let percent = Math.round((score/questions.length)*100);
+        document.getElementById('percentage').innerText = `Percentage: ${percent}%`;
+        document.getElementById('resultModal').style.display = 'flex';
+    }
+
+    function startReview() {
+        isReviewMode = true;
+        document.getElementById('resultModal').style.display = 'none';
+        document.getElementById('review-status').style.display = 'inline';
+        document.getElementById('btn-submit').style.display = 'none';
+        document.getElementById('btn-restart').style.display = 'block';
+        loadQuestion(0);
+    }
+
+    window.onload = function() { loadQuestion(0); startTimer(); };
+</script>
+
+</body>
+</html>
